@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering with Claude Code — FIG</title>
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap">
+    <style>
+        :root {
+            --yellow: #ffe500;
+            --yellow-dim: rgba(255, 229, 0, 0.15);
+            --yellow-glow: rgba(255, 229, 0, 0.25);
+            --white: #ffffff;
+            --white-60: rgba(255, 255, 255, 0.6);
+            --white-40: rgba(255, 255, 255, 0.4);
+            --white-20: rgba(255, 255, 255, 0.2);
+            --white-10: rgba(255, 255, 255, 0.1);
+            --white-05: rgba(255, 255, 255, 0.05);
+            --charcoal: #262626;
+            --bg: #0D0D0D;
+            --bg-card: #161616;
+            --bg-card-hover: #1a1a1a;
+            --font-display: 'Clash Display', sans-serif;
+            --font-body: 'Satoshi', sans-serif;
+            --slide-padding: clamp(2rem, 5vw, 5rem);
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration: 0.7s;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--white);
+            font-family: var(--font-body);
+            font-weight: 400;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--yellow);
+            box-shadow: 0 0 10px var(--yellow-glow);
+            z-index: 1000;
+            transition: width 0.3s var(--ease);
+        }
+
+        .nav-dots {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 999;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--white-20);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            padding: 0;
+        }
+
+        .nav-dot.active {
+            background: var(--yellow);
+            box-shadow: 0 0 8px var(--yellow-glow);
+        }
+
+        .nav-dot:hover { background: var(--white-40); }
+
+        .slide-number {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            color: var(--white-40);
+            z-index: 999;
+            letter-spacing: 0.1em;
+        }
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            color: var(--white-40);
+            z-index: 999;
+            transition: opacity 0.5s ease;
+        }
+
+        .keyboard-hint kbd {
+            background: var(--white-10);
+            border: 1px solid var(--white-20);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+        }
+
+        .keyboard-hint.hidden { opacity: 0; pointer-events: none; }
+
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--slide-padding);
+            scroll-snap-align: start;
+            position: relative;
+        }
+
+        .slide-inner {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            color: var(--white-60);
+            font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+            max-width: 700px;
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            color: var(--white-60);
+            max-width: 600px;
+        }
+
+        .yellow { color: var(--yellow); }
+
+        .label {
+            display: inline-block;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--yellow);
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .card:hover { background: var(--bg-card-hover); }
+        .card h3 { color: var(--yellow); }
+        .card p { color: var(--white-60); font-size: 0.9rem; }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .card-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .card-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .agent-trigger {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--yellow);
+            margin-bottom: 0.75rem;
+            background: var(--yellow-dim);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .agent-name {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-card p { font-size: 0.85rem; color: var(--white-60); }
+
+        .callout {
+            background: linear-gradient(135deg, var(--yellow-dim), rgba(255, 229, 0, 0.05));
+            border: 1px solid rgba(255, 229, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .callout p {
+            color: var(--yellow);
+            font-weight: 700;
+            font-size: 1rem;
+            max-width: none;
+        }
+
+        .callout .callout-body {
+            color: var(--white-60);
+            font-weight: 400;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .table-wrap {
+            margin-top: 1.5rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead th {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--yellow);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--white-10);
+        }
+
+        tbody td {
+            padding: 0.75rem 1rem;
+            color: var(--white-60);
+            border-bottom: 1px solid var(--white-05);
+        }
+
+        tbody tr:hover { background: var(--white-05); }
+
+        ul.bullets {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 1rem;
+        }
+
+        ul.bullets li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--white-60);
+            font-size: 0.95rem;
+        }
+
+        ul.bullets li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.55em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--yellow);
+        }
+
+        ul.bullets li strong { color: var(--white); }
+
+        code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            background: var(--white-10);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: var(--yellow);
+        }
+
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 8px;
+            padding: 1.25rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--white-60);
+            overflow-x: auto;
+            margin-top: 1rem;
+            line-height: 1.7;
+        }
+
+        .code-block .prompt { color: var(--white-40); }
+        .code-block .cmd { color: var(--white); }
+        .code-block .comment { color: var(--white-40); font-style: italic; }
+        .code-block .flag { color: var(--yellow); }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .compare-col {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .compare-col.highlight {
+            border-color: rgba(255, 229, 0, 0.3);
+            background: linear-gradient(180deg, rgba(255, 229, 0, 0.05), var(--bg-card));
+        }
+
+        .compare-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .compare-col .compare-label { color: var(--white-40); }
+        .compare-col.highlight .compare-label { color: var(--yellow); }
+
+        .arch-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-top: 1.5rem;
+        }
+
+        .arch-layer {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid var(--white-10);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .layer-label {
+            min-width: 120px;
+            padding: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            color: var(--white-40);
+            background: var(--white-05);
+        }
+
+        .layer-content {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            font-size: 0.9rem;
+            color: var(--white-60);
+            display: flex;
+            align-items: center;
+        }
+
+        .arch-layer-4 { border-color: rgba(255, 229, 0, 0.3); }
+        .arch-layer-4 .layer-label { background: var(--yellow-dim); color: var(--yellow); }
+        .arch-layer-3 { background: var(--bg-card); }
+        .arch-layer-2 { background: var(--bg-card); }
+        .arch-layer-1 { background: var(--white-05); opacity: 0.7; }
+
+        .arch-connector {
+            width: 2px;
+            height: 12px;
+            background: var(--white-20);
+            margin: 0 auto;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .flow-step.active {
+            border-color: rgba(255, 229, 0, 0.4);
+            background: var(--yellow-dim);
+            color: var(--yellow);
+        }
+
+        .flow-arrow { color: var(--white-20); font-size: 1.2rem; }
+
+        .timeline {
+            margin-top: 1.5rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--white-10);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 0 0 1.5rem 1.25rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.4rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--white-20);
+            transform: translateX(-4px);
+        }
+
+        .timeline-item:last-child::before {
+            background: var(--yellow);
+            box-shadow: 0 0 8px var(--yellow-glow);
+        }
+
+        .timeline-item .time {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-item p { font-size: 0.85rem; }
+
+        .bottom-line-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .bottom-line-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+
+        .bottom-line-number {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--yellow);
+            min-width: 28px;
+            height: 28px;
+            background: var(--yellow-dim);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .bottom-line-text {
+            color: var(--white-60);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .bottom-line-text strong { color: var(--white); }
+
+        .closing-quote {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            line-height: 1.3;
+            max-width: 700px;
+            margin-bottom: 1.5rem;
+        }
+
+        .closing-attribution {
+            color: var(--white-40);
+            font-size: 0.85rem;
+        }
+
+        .db-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .db-tag {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--white-05);
+            color: var(--white-40);
+            border: 1px solid var(--white-10);
+        }
+
+        .db-tag.active {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border-color: rgba(255, 229, 0, 0.3);
+        }
+
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .shortcut-item {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .shortcut-keys {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: var(--yellow);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .shortcut-desc {
+            font-size: 0.8rem;
+            color: var(--white-60);
+        }
+
+        /* Evolution timeline */
+        .evo-track {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        .evo-step {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 0 0.25rem;
+        }
+
+        .evo-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--white-20);
+            margin: 0 auto 0.75rem;
+            border: 2px solid var(--bg);
+        }
+
+        .evo-step:last-child .evo-dot {
+            background: var(--yellow);
+            box-shadow: 0 0 10px var(--yellow-glow);
+        }
+
+        .evo-step:nth-child(4) .evo-dot {
+            background: var(--white-40);
+        }
+
+        .evo-label {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--white);
+            margin-bottom: 0.35rem;
+            line-height: 1.3;
+        }
+
+        .evo-step:last-child .evo-label {
+            color: var(--yellow);
+        }
+
+        .evo-desc {
+            font-size: 0.7rem;
+            color: var(--white-40);
+            line-height: 1.4;
+        }
+
+        /* Organize Your Context boxes */
+        .context-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .context-box {
+            background: var(--bg-card);
+            border: 1px solid var(--white-10);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .context-box.active {
+            border-color: rgba(255, 229, 0, 0.4);
+            background: linear-gradient(180deg, rgba(255, 229, 0, 0.08), var(--bg-card));
+        }
+
+        .context-box h3 {
+            color: var(--yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .context-box p {
+            font-size: 0.85rem;
+            color: var(--white-60);
+            max-width: none;
+        }
+
+        .context-arrow {
+            font-size: 1.5rem;
+            color: var(--yellow);
+            padding: 0 1rem;
+            font-weight: 700;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide.visible .reveal:nth-child(1) { transition-delay: 0s; }
+        .slide.visible .reveal:nth-child(2) { transition-delay: 0.1s; }
+        .slide.visible .reveal:nth-child(3) { transition-delay: 0.2s; }
+        .slide.visible .reveal:nth-child(4) { transition-delay: 0.3s; }
+        .slide.visible .reveal:nth-child(5) { transition-delay: 0.4s; }
+        .slide.visible .reveal:nth-child(6) { transition-delay: 0.5s; }
+        .slide.visible .reveal:nth-child(7) { transition-delay: 0.6s; }
+        .slide.visible .reveal:nth-child(8) { transition-delay: 0.7s; }
+        .slide.visible .reveal:nth-child(9) { transition-delay: 0.8s; }
+
+        .stagger-children .reveal:nth-child(1) { transition-delay: 0s; }
+        .stagger-children .reveal:nth-child(2) { transition-delay: 0.08s; }
+        .stagger-children .reveal:nth-child(3) { transition-delay: 0.16s; }
+        .stagger-children .reveal:nth-child(4) { transition-delay: 0.24s; }
+        .stagger-children .reveal:nth-child(5) { transition-delay: 0.32s; }
+
+        @media (max-width: 900px) {
+            .two-col, .card-grid-3, .compare-grid { grid-template-columns: 1fr; }
+            .shortcut-grid { grid-template-columns: repeat(2, 1fr); }
+            .evo-track { flex-direction: column; gap: 1rem; }
+            .nav-dots { display: none; }
+            .keyboard-hint { display: none; }
+            .context-flow { flex-direction: column; }
+            .context-arrow { transform: rotate(90deg); padding: 0.5rem 0; }
+        }
+
+        @media (max-width: 600px) {
+            .slide { padding: 1.5rem; }
+            .card-grid-4 { grid-template-columns: 1fr; }
+            .shortcut-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.8rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                transition: opacity 0.3s ease;
+                transform: none !important;
+            }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <nav class="nav-dots" id="navDots"></nav>
+    <div class="slide-number" id="slideNumber">01 / 24</div>
+    <div class="keyboard-hint" id="keyboardHint">
+        <kbd>&darr;</kbd> or <kbd>Space</kbd> to navigate
+    </div>
+
+    <!-- ==================== SLIDE 1: Title ==================== -->
+    <section class="slide" id="slide-1">
+        <div class="slide-inner" style="text-align: center;">
+            <span class="label reveal">Tenex &times; FIG Engineering</span>
+            <h1 class="reveal" style="max-width: 800px; margin: 0 auto;">Engineering with <span class="yellow">Claude Code</span></h1>
+            <p class="subtitle reveal" style="margin: 1rem auto 0;">From AI Basics to Engineered Workflows</p>
+            <p class="reveal" style="margin-top: 2.5rem; font-size: 0.85rem; color: var(--white-40);">Jason Brown &mdash; February 2026</p>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: Evolution of Engineering ==================== -->
+    <section class="slide" id="slide-2">
+        <div class="slide-inner">
+            <span class="label reveal">Where We Are</span>
+            <h2 class="reveal">The Evolution of <span class="yellow">Engineering</span></h2>
+            <div class="evo-track reveal">
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <div class="evo-label">Write Every Line</div>
+                    <div class="evo-desc">Manual coding. Stack Overflow. Copy-paste from docs.</div>
+                </div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <div class="evo-label">AI as Thought Partner</div>
+                    <div class="evo-desc">ChatGPT for ideas and rubber-ducking. You still write all code.</div>
+                </div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <div class="evo-label">AI Autocomplete</div>
+                    <div class="evo-desc">Copilot inline suggestions. Accept or reject, line by line.</div>
+                </div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <div class="evo-label">Significant AI Boost</div>
+                    <div class="evo-desc">Cursor, ChatGPT writing chunks. You edit, refine, integrate.</div>
+                </div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <div class="evo-label">AI Writes Code, Humans Orchestrate</div>
+                    <div class="evo-desc">You define what to build and enforce quality. AI handles execution.</div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 2rem;">
+                <p>We're in the transition to that last stage right now.</p>
+                <p class="callout-body">The landscape is changing fast. The engineers who learn to orchestrate, manage context, and enforce quality will pull ahead. Standing still means falling behind.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 3: AI as a Mirror ==================== -->
+    <section class="slide" id="slide-3">
+        <div class="slide-inner">
+            <span class="label reveal">The Real Constraint</span>
+            <h2 class="reveal">AI Is a Mirror for <span class="yellow">Unclear Thinking</span></h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">When the output is messy, the input usually was too.</p>
+            <div class="two-col stagger-children">
+                <div class="card reveal">
+                    <h3>Ambiguous Words</h3>
+                    <p>A word that meant one thing to you and something completely different to the model. "Service" could mean a backend class, a microservice, or a SaaS product.</p>
+                </div>
+                <div class="card reveal">
+                    <h3>Implied Constraints</h3>
+                    <p>Some requirement you thought was obvious but never stated. "Of course it should use our existing auth flow." The model doesn't know that unless you say it.</p>
+                </div>
+                <div class="card reveal">
+                    <h3>Unmade Decisions</h3>
+                    <p>A design choice you hadn't actually settled yet but expected the AI to make correctly on your behalf. If you don't know the answer, neither will the model.</p>
+                </div>
+                <div class="card reveal">
+                    <h3>The Black Box</h3>
+                    <p>Every AI instance is born with zero context about your project, your team, or your conventions. It's in the codebase but it has no memory of yesterday.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>The unlock with agentic coding is not what the LLMs do. It's how you manage and organize information and context.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 4: What Agents Unlock ==================== -->
+    <section class="slide" id="slide-4">
+        <div class="slide-inner">
+            <span class="label reveal">Claude Code</span>
+            <h2 class="reveal">What <span class="yellow">Agents</span> Unlock</h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">You already know what chat-based AI can do. Here's what becomes possible when the AI runs on your machine and takes action.</p>
+            <div class="card-grid-3 stagger-children">
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Multi-step tasks</span>
+                    <div class="agent-name">Chains of actions</div>
+                    <p>Read 15 files, trace a bug through the call stack, edit 3 files, run the test suite, fix failures, commit. One prompt.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Self-verification</span>
+                    <div class="agent-name">Closed feedback loops</div>
+                    <p>Claude runs your tests, reads the output, and iterates until they pass. You're not the only feedback loop anymore.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Parallel workers</span>
+                    <div class="agent-name">Sub-agent delegation</div>
+                    <p>Spin up separate agents to explore different parts of the codebase simultaneously. They report back summaries.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Git native</span>
+                    <div class="agent-name">Branch, commit, PR</div>
+                    <p>Create branches, write commit messages, open pull requests, stage specific files. All from natural language.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Tool integration</span>
+                    <div class="agent-name">CLI + MCP</div>
+                    <p>Use any CLI tool you have installed: <code>gh</code>, <code>aws</code>, <code>psql</code>, your build system. Connect external services via MCP.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Persistent sessions</span>
+                    <div class="agent-name">Resume and rewind</div>
+                    <p>Pick up where you left off. Fork sessions. Rewind to any checkpoint. Your context is preserved across interruptions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 5: The Agentic Loop ==================== -->
+    <section class="slide" id="slide-5">
+        <div class="slide-inner">
+            <span class="label reveal">Core Concept</span>
+            <h2 class="reveal">The Agentic Loop</h2>
+            <p class="reveal">Every task follows the same cycle. Understanding this loop changes how you prompt and steer Claude.</p>
+            <div class="flow-row reveal" style="justify-content: center; margin-top: 2rem;">
+                <div class="flow-step">Your Prompt</div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step active">Gather Context</div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step active">Take Action</div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step active">Verify Results</div>
+                <span class="flow-arrow">&rarr;</span>
+                <div class="flow-step">Repeat</div>
+            </div>
+            <div class="card-grid-3 reveal" style="margin-top: 1.5rem;">
+                <div class="card">
+                    <h3>Gather Context</h3>
+                    <p>Searches files, reads code, runs commands to understand the current state. Every file it reads eats context window. This is why <strong style="color: var(--white);">scoping matters</strong>.</p>
+                </div>
+                <div class="card">
+                    <h3>Take Action</h3>
+                    <p>Edits files, runs shell commands, creates branches. Claude picks the right tool at each step based on what it learned from the last. You can <strong style="color: var(--white);">interrupt any time</strong>.</p>
+                </div>
+                <div class="card">
+                    <h3>Verify Results</h3>
+                    <p>Runs tests, checks build output, validates behavior. If you give Claude verification criteria up front, <strong style="color: var(--white);">output quality jumps dramatically</strong>.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>The single highest-leverage thing you can do: give Claude a way to verify its own work.</p>
+                <p class="callout-body">Tests, expected output, linting, type checks. If Claude can check itself, you become a reviewer, not a debugger.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 6: Vibe Coding vs Engineered ==================== -->
+    <section class="slide" id="slide-6">
+        <div class="slide-inner">
+            <span class="label reveal">The Spectrum</span>
+            <h2 class="reveal">Vibe Coding vs. <span class="yellow">Engineered Workflows</span></h2>
+            <div class="compare-grid reveal">
+                <div class="compare-col">
+                    <span class="compare-label">Vibe Coding</span>
+                    <ul class="bullets">
+                        <li>"Build me a thing" and hope for the best</li>
+                        <li>Fine for prototypes and throwaway experiments</li>
+                        <li>No documentation, no structure, no review</li>
+                        <li>Results are unpredictable and non-reproducible</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight">
+                    <span class="compare-label">Engineered Approach</span>
+                    <ul class="bullets">
+                        <li>Organize documentation and context deliberately</li>
+                        <li>Create a structured "brain" for your repository</li>
+                        <li>Predictable, reviewable, <strong>compliant</strong></li>
+                        <li>Results compound. Each session builds on the last.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>The real leverage is the file structure you create to give Claude the right context at the right time.</p>
+                <p class="callout-body">Claude has some persistent memory, but where you actually get that 10x multiplier is organizing your documentation, your plans, your decisions into a structure that Claude can navigate. Your repo becomes a brain, not just code.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 7: Ghostty ==================== -->
+    <section class="slide" id="slide-7">
+        <div class="slide-inner">
+            <span class="label reveal">Tooling Unlock</span>
+            <h2 class="reveal"><span class="yellow">Ghostty</span> Terminal</h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">A fast, GPU-accelerated terminal with native tabs and splits. This is a huge unlock for parallelizing your work with Claude Code.</p>
+            <div class="shortcut-grid reveal">
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">&#8984; T</div>
+                    <div class="shortcut-desc">New tab</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">&#8984; D</div>
+                    <div class="shortcut-desc">Split right</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">&#8679;&#8984; D</div>
+                    <div class="shortcut-desc">Split down</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">&#8984; W</div>
+                    <div class="shortcut-desc">Close split/tab</div>
+                </div>
+            </div>
+            <div class="two-col reveal" style="margin-top: 1.5rem;">
+                <div class="card">
+                    <h3>Parallel Projects</h3>
+                    <p>Working on two projects? Open a tab for each. Within each tab, split terminals so you have multiple Claude instances running side by side.</p>
+                </div>
+                <div class="card">
+                    <h3>Specialized Sessions</h3>
+                    <p>One Claude as a <strong style="color: var(--white);">thought partner</strong> for planning. Another as an <strong style="color: var(--white);">executor</strong> for implementation. Or one for UI tweaks and another for backend work.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>Parallelization is the single biggest productivity unlock with agentic coding.</p>
+                <p class="callout-body">While one Claude is running tests, another is researching your next task. While one is implementing a feature, another is reviewing the last one. Tabs and splits make this effortless.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 8: Raycast ==================== -->
+    <section class="slide" id="slide-8">
+        <div class="slide-inner">
+            <span class="label reveal">Tooling Unlock</span>
+            <h2 class="reveal"><span class="yellow">Raycast</span> Snippets</h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">Stop hunting through tabs and notes for your prompts. Store every prompt you use regularly as a Raycast snippet and access it in seconds.</p>
+            <div class="bottom-line-grid stagger-children">
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">1</div>
+                    <div class="bottom-line-text"><strong>Open Raycast</strong> with your keybind</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">2</div>
+                    <div class="bottom-line-text"><strong>Hit Enter</strong> for Snippets</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">3</div>
+                    <div class="bottom-line-text"><strong>Select the snippet</strong> you need (e.g. "Bug Fixer", "Implementation Plan") and hit Enter. It's pasted directly.</div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>No more searching through bookmarks, notes, or Slack messages for that prompt you wrote last week.</p>
+                <p class="callout-body">Every second you save looking for a prompt is a second spent using it. Store your daily-use prompts as snippets and get them in two keystrokes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 9: Essential Commands ==================== -->
+    <section class="slide" id="slide-9">
+        <div class="slide-inner">
+            <span class="label reveal">Essentials</span>
+            <h2 class="reveal">Key Commands &amp; Controls</h2>
+            <div class="table-wrap reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What It Does</th>
+                            <th>When To Use</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>/model</code></td>
+                            <td>Switch between Sonnet and Opus</td>
+                            <td style="color: var(--white-60);">Sonnet for most tasks, Opus for deep reasoning</td>
+                        </tr>
+                        <tr>
+                            <td><code>/clear</code></td>
+                            <td>Reset context window</td>
+                            <td style="color: var(--yellow);">Between unrelated tasks. Critical.</td>
+                        </tr>
+                        <tr>
+                            <td><code>/compact</code></td>
+                            <td>Summarize conversation</td>
+                            <td style="color: var(--white-60);">When context is filling up mid-task</td>
+                        </tr>
+                        <tr>
+                            <td><code>/init</code></td>
+                            <td>Generate a starter CLAUDE.md</td>
+                            <td style="color: var(--white-60);">First time setting up a project</td>
+                        </tr>
+                        <tr>
+                            <td><code>Esc</code></td>
+                            <td>Stop Claude mid-action</td>
+                            <td style="color: var(--white-60);">When it's heading the wrong direction</td>
+                        </tr>
+                        <tr>
+                            <td><code>Shift+Tab</code></td>
+                            <td>Cycle permission modes</td>
+                            <td style="color: var(--white-60);">Default &rarr; Auto-accept &rarr; Plan Mode</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="compare-grid reveal" style="margin-top: 1.25rem;">
+                <div class="compare-col highlight">
+                    <span class="compare-label">Your Safety Net</span>
+                    <p style="color: var(--white); font-weight: 500; font-size: 0.95rem;">Plan Mode</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem;">Read-only exploration. Claude plans without making any changes. Review the plan, then switch back to execute.</p>
+                </div>
+                <div class="compare-col" style="border-color: rgba(255, 229, 0, 0.15);">
+                    <span class="compare-label">Your Bulldozer</span>
+                    <p style="color: var(--white); font-weight: 500; font-size: 0.95rem;"><code style="font-size: 0.85rem;">--dangerously-skip-permissions</code></p>
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem;">Bypass all permission checks. Claude works uninterrupted. Great for lint fixes, boilerplate, and trusted workflows.</p>
+                    <div class="code-block" style="margin-top: 0.75rem; font-size: 0.75rem; padding: 0.75rem;">
+                        <span class="comment"># Pro tip: create an alias</span><br>
+                        <span class="cmd">alias <span class="flag">kevin</span>="claude --dangerously-skip-permissions"</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 10: Resume & Rewind ==================== -->
+    <section class="slide" id="slide-10">
+        <div class="slide-inner">
+            <span class="label reveal">Most Underused Features</span>
+            <h2 class="reveal">Resume &amp; <span class="yellow">Rewind</span></h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">Your sessions are persistent and reversible. Use this to your advantage.</p>
+            <div class="compare-grid stagger-children">
+                <div class="compare-col reveal">
+                    <span class="compare-label">Resume</span>
+                    <div class="code-block" style="margin-bottom: 1rem;">
+                        <span class="prompt">&gt;</span> <span class="cmd"><span class="flag">/resume</span></span><br>
+                        <span class="comment"># Pick from recent sessions</span>
+                    </div>
+                    <ul class="bullets">
+                        <li>Pick up exactly where you left off</li>
+                        <li><strong>Fork sessions:</strong> open a new terminal, run <code>/resume</code>, and select the same session. Now you have two instances with the same context.</li>
+                        <li>Or select an older session to pick up previous work</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight reveal">
+                    <span class="compare-label">Rewind</span>
+                    <div class="code-block" style="margin-bottom: 1rem;">
+                        <span class="comment"># Double-tap Escape or:</span><br>
+                        <span class="prompt">&gt;</span> <span class="cmd"><span class="flag">/rewind</span></span><br>
+                        <span class="comment"># Restore to any checkpoint</span>
+                    </div>
+                    <ul class="bullets">
+                        <li><strong>Undo mistakes:</strong> revert to the state before the agent messed something up</li>
+                        <li><strong>Context preservation:</strong> build up great context, fix a small bug, rewind, fix another small bug, rewind. Same rich context every time.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 11: Skills ==================== -->
+    <section class="slide" id="slide-11">
+        <div class="slide-inner">
+            <span class="label reveal">Extend Claude Code</span>
+            <h2 class="reveal"><span class="yellow">Skills</span></h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">Skills are reusable workflows stored in your repo. Claude loads them on demand when they're relevant, or you invoke them directly with a slash command.</p>
+            <div class="two-col stagger-children">
+                <div class="card reveal">
+                    <h3>What They Are</h3>
+                    <p style="margin-bottom: 0.75rem;">A <code>SKILL.md</code> file inside <code>.claude/skills/</code> that defines a prompt, a workflow, or domain knowledge Claude should use for specific tasks.</p>
+                    <ul class="bullets" style="margin-top: 0.5rem;">
+                        <li>Checked into git, shared with your team</li>
+                        <li><strong>Loaded on demand</strong>, not every session (unlike CLAUDE.md)</li>
+                        <li>Can be invoked manually: <code>/bug-fixer</code>, <code>/code-mapper</code></li>
+                        <li>Or auto-applied when Claude detects relevance</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3>What They Unlock</h3>
+                    <p style="margin-bottom: 0.75rem;">Consistent, repeatable workflows that any team member can trigger with a single command.</p>
+                    <ul class="bullets" style="margin-top: 0.5rem;">
+                        <li><strong>Team conventions as code.</strong> Not in a wiki nobody reads. In the repo, enforced by the tool.</li>
+                        <li><strong>Onboarding accelerator.</strong> New engineer runs <code>/fix-issue 1234</code> and follows a proven workflow.</li>
+                        <li><strong>Quality guardrails.</strong> The skill defines the steps: research, plan, verify. The engineer just invokes it.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="code-block reveal" style="font-size: 0.78rem;">
+                <span class="comment"># .claude/skills/bug-fixer/SKILL.md</span><br>
+                <span class="cmd">---</span><br>
+                <span class="cmd">name: <span class="flag">bug-fixer</span></span><br>
+                <span class="cmd">description: Investigate bugs with root cause analysis before fixing</span><br>
+                <span class="cmd">---</span><br>
+                <span class="cmd">Analyze the bug: <span class="flag">$ARGUMENTS</span></span><br>
+                <span class="cmd">1. Work in read-only mode first. Understand the problem.</span><br>
+                <span class="cmd">2. Find evidence: specific files, line numbers, log output.</span><br>
+                <span class="cmd">3. Root cause analysis. Narrow to the most likely cause.</span><br>
+                <span class="cmd">4. Propose a clean fix. Pause for approval before editing.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 12: Sub-agents & Context ==================== -->
+    <section class="slide" id="slide-12">
+        <div class="slide-inner">
+            <span class="label reveal">Scaling Your Sessions</span>
+            <h2 class="reveal">Sub-agents &amp; Context Management</h2>
+            <div class="two-col stagger-children">
+                <div class="reveal">
+                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Sub-agents</h3>
+                    <p style="margin-bottom: 1rem;">Claude can spawn separate workers that explore in their own context window and report back summaries.</p>
+                    <ul class="bullets">
+                        <li>Research without cluttering your main session</li>
+                        <li>Code review with a <strong>fresh perspective</strong></li>
+                        <li>Parallel investigation across different areas</li>
+                    </ul>
+                    <div class="code-block" style="margin-top: 1rem;">
+                        <span class="comment">"Please investigate the structure<br>of the codebase. Spin up a sub-agent<br>for each major service or feature."</span>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Context Window</h3>
+                    <p style="margin-bottom: 1rem;">Your most important resource. It holds everything: conversation, files read, command output. Performance degrades as it fills.</p>
+                    <ul class="bullets">
+                        <li><code>/clear</code> between unrelated tasks</li>
+                        <li><code>/compact</code> to summarize what matters and free space. You can even add a focus: <code>/compact focus on the API changes</code></li>
+                        <li>Use sub-agents for heavy exploration</li>
+                        <li>After 2 failed corrections: <code>/clear</code> and start fresh with a better prompt</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 13: CLAUDE.md ==================== -->
+    <section class="slide" id="slide-13">
+        <div class="slide-inner">
+            <span class="label reveal">The Router Pattern</span>
+            <h2 class="reveal">CLAUDE.md as a <span class="yellow">Router</span></h2>
+            <p class="reveal" style="margin-bottom: 1rem;">A markdown file Claude reads at the start of every session. Purpose, structure, and pointers to where to go next.</p>
+            <div class="code-block reveal" style="font-size: 0.78rem; line-height: 1.65;">
+                <span class="comment"># Frontend Components</span><br><br>
+                <span class="comment">## Purpose</span><br>
+                <span class="cmd">Component organization following feature-first layout</span><br>
+                <span class="cmd">with progressive hoisting as code becomes reusable.</span><br><br>
+                <span class="comment">## Directories at This Level</span><br>
+                <span class="cmd">| Directory  | Purpose                        | Docs                        |</span><br>
+                <span class="cmd">|------------|--------------------------------|-----------------------------|</span><br>
+                <span class="cmd">| <span class="flag">ui/</span>        | shadcn/ui primitives           | <span class="flag">&#8594; ./ui/CLAUDE.md</span>            |</span><br>
+                <span class="cmd">| <span class="flag">common/</span>    | Shared composites by concern   | <span class="flag">&#8594; ./common/CLAUDE.md</span>        |</span><br>
+                <span class="cmd">| <span class="flag">pages/</span>     | Feature pages by domain        | <span class="flag">&#8594; ./pages/CLAUDE.md</span>         |</span><br>
+                <span class="cmd">| <span class="flag">layout/</span>    | Layout, breadcrumbs, headers   | (no guide yet)              |</span><br><br>
+                <span class="comment">## Quick Reference</span><br>
+                <span class="cmd">New feature? Start in pages/&lt;feature&gt;/</span><br>
+                <span class="cmd">Reusable across features? Move to common/&lt;group&gt;/</span><br>
+                <span class="cmd">Design-system worthy? Promote to ui/</span>
+            </div>
+            <p class="reveal" style="margin-top: 1rem; font-size: 0.85rem; color: var(--white-40);">Each subdirectory CLAUDE.md follows the same pattern: brief purpose, pointers to where to go, quick reference for common tasks.</p>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 14: Trail Marker Analogy ==================== -->
+    <section class="slide" id="slide-14">
+        <div class="slide-inner">
+            <span class="label reveal">The Router Pattern</span>
+            <h2 class="reveal">The Trail Marker <span class="yellow">Analogy</span></h2>
+            <div class="compare-grid reveal" style="margin-top: 1.5rem;">
+                <div class="compare-col">
+                    <span class="compare-label">Without CLAUDE.md</span>
+                    <p style="margin-bottom: 1rem;">Claude is hiking through the woods, hoping to stumble on the right landmarks.</p>
+                    <ul class="bullets">
+                        <li>Greps files, reads directories, guesses</li>
+                        <li>Wastes context on dead ends</li>
+                        <li>Misses hidden configuration</li>
+                        <li>May never find the critical file</li>
+                    </ul>
+                    <p style="margin-top: 1rem; color: var(--white-40); font-size: 0.85rem;">Lost in the dark. Exploring by touch.</p>
+                </div>
+                <div class="compare-col highlight">
+                    <span class="compare-label">With CLAUDE.md Files</span>
+                    <p style="margin-bottom: 1rem;">Trail markers at every fork in the path. Claude walks in, sees where to go.</p>
+                    <ul class="bullets">
+                        <li>Knows the boundaries and architecture upfront</li>
+                        <li>Follows markers to the right subdirectory</li>
+                        <li>No dead ends, no wasted context</li>
+                        <li><strong>Junior engineer + good CLAUDE.md = senior-level output</strong></li>
+                    </ul>
+                    <p style="margin-top: 1rem; color: var(--yellow); font-size: 0.85rem; font-weight: 500;">Guided, efficient, precise.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 15: Hierarchical Loading ==================== -->
+    <section class="slide" id="slide-15">
+        <div class="slide-inner">
+            <span class="label reveal">The Router Pattern</span>
+            <h2 class="reveal">Hierarchical Loading</h2>
+            <p class="reveal" style="margin-bottom: 1rem;">CLAUDE.md files form a tree. Root loads always. Children load when Claude works in those directories. Progressive disclosure.</p>
+            <div class="arch-stack reveal">
+                <div class="arch-layer arch-layer-4">
+                    <div class="layer-label">Root</div>
+                    <div class="layer-content">
+                        <div>
+                            <strong style="color: var(--yellow);">CLAUDE.md</strong> &mdash; Project-wide: code style, build commands, architecture overview, team conventions
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-connector"></div>
+                <div class="arch-layer arch-layer-3">
+                    <div class="layer-label">Services</div>
+                    <div class="layer-content">
+                        <div>
+                            <strong style="color: var(--white);">apps/api/CLAUDE.md</strong> &mdash; API patterns, route conventions, DB access rules, auth flow
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-connector"></div>
+                <div class="arch-layer arch-layer-2">
+                    <div class="layer-label">Feature</div>
+                    <div class="layer-content">
+                        <div>
+                            <strong style="color: var(--white);">apps/api/src/services/scoring/CLAUDE.md</strong> &mdash; Scoring engine internals, rule evaluation, test patterns
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-connector"></div>
+                <div class="arch-layer arch-layer-1">
+                    <div class="layer-label">Frontend</div>
+                    <div class="layer-content">
+                        <div>
+                            <strong style="color: var(--white);">apps/web/src/components/CLAUDE.md</strong> &mdash; Component patterns, hoisting rules, naming conventions
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>T-shaped context: broad at the top, deep where Claude is working.</p>
+                <p class="callout-body">Claude doesn't load everything upfront. It follows the trail. Each layer adds only what's needed for that area of the codebase.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 16: What Goes In / Out ==================== -->
+    <section class="slide" id="slide-16">
+        <div class="slide-inner">
+            <span class="label reveal">The Router Pattern</span>
+            <h2 class="reveal">What Goes In, What Stays Out</h2>
+            <p class="reveal" style="margin-bottom: 1rem;">A CLAUDE.md is only valuable if it's concise. For every line, ask: would removing this cause Claude to make mistakes?</p>
+            <div class="compare-grid reveal">
+                <div class="compare-col highlight">
+                    <span class="compare-label">Include</span>
+                    <ul class="bullets">
+                        <li><strong>Build commands</strong> Claude can't guess</li>
+                        <li><strong>Code style</strong> rules that differ from defaults</li>
+                        <li><strong>Architectural decisions</strong> specific to your project</li>
+                        <li><strong>Common gotchas</strong> and non-obvious behaviors</li>
+                        <li><strong>Pointers</strong> to important subdirectories</li>
+                    </ul>
+                </div>
+                <div class="compare-col">
+                    <span class="compare-label">Exclude</span>
+                    <ul class="bullets">
+                        <li>Anything Claude can figure out from code</li>
+                        <li>Standard language conventions</li>
+                        <li>Long tutorials or API docs (link instead)</li>
+                        <li>Information that changes frequently</li>
+                        <li>Self-evident things like "write clean code"</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>Bloated CLAUDE.md files cause Claude to ignore your instructions and pollutes your context window.</p>
+                <p class="callout-body">Treat it like code: review it when things go wrong, prune regularly, and test whether Claude's behavior actually shifts.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 17: Organize Your Context ==================== -->
+    <section class="slide" id="slide-17">
+        <div class="slide-inner">
+            <span class="label reveal">Workflow Pipeline</span>
+            <h2 class="reveal">Organize Your <span class="yellow">Context</span></h2>
+            <p class="reveal" style="margin-bottom: 0.5rem;">Structure your documentation so each artifact feeds the next. Context compounds when it's organized deliberately.</p>
+            <div class="context-flow reveal" style="margin-top: 2rem;">
+                <div class="context-box">
+                    <h3>PRDs</h3>
+                    <p>Define <strong style="color: var(--white);">what</strong> you're building. User workflows, acceptance criteria, compliance requirements. Humans own the decisions.</p>
+                </div>
+                <div class="context-arrow">&rarr;</div>
+                <div class="context-box active">
+                    <h3>Implementation Plans</h3>
+                    <p>Define <strong style="color: var(--white);">how</strong> you're building it. File-level changes, scoped tasks, reviewed by a separate Claude session before execution.</p>
+                </div>
+                <div class="context-arrow">&rarr;</div>
+                <div class="context-box">
+                    <h3>Documentation Directories</h3>
+                    <p>Persistent knowledge that <strong style="color: var(--white);">compounds</strong>. Claude deep-dives into the codebase and generates thorough docs. Living artifacts for future sessions.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 2rem;">
+                <p>Each artifact builds on the last. PRDs inform plans. Plans produce code. Code generates documentation. Documentation feeds the next PRD.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 18: Build the Factory ==================== -->
+    <section class="slide" id="slide-18">
+        <div class="slide-inner">
+            <span class="label reveal">Skills &amp; Prompts</span>
+            <h2 class="reveal">Build the <span class="yellow">Factory</span>, Not the Widget</h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">Instead of copy-pasted prompts, learn how to think about building them. They'll change with every project, model, and team member.</p>
+            <div class="two-col stagger-children">
+                <div class="card reveal">
+                    <h3>The Universal Pattern</h3>
+                    <p style="margin-bottom: 1rem;">Every effective prompt follows the same skeleton:</p>
+                    <div class="flow-row" style="margin-top: 0; flex-wrap: wrap;">
+                        <div class="flow-step" style="font-size: 0.8rem;">Familiarize</div>
+                        <span class="flow-arrow">&rarr;</span>
+                        <div class="flow-step" style="font-size: 0.8rem;">Research</div>
+                        <span class="flow-arrow">&rarr;</span>
+                        <div class="flow-step" style="font-size: 0.8rem;">Plan</div>
+                        <span class="flow-arrow">&rarr;</span>
+                        <div class="flow-step" style="font-size: 0.8rem;">Verify</div>
+                    </div>
+                    <ul class="bullets" style="margin-top: 1rem;">
+                        <li><strong>Familiarize:</strong> understand the codebase and its patterns</li>
+                        <li><strong>Research:</strong> dig into docs for unfamiliar technologies</li>
+                        <li><strong>Plan:</strong> define exactly what changes to make and where</li>
+                        <li><strong>Verify:</strong> confirm the strategy works with existing conventions</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3>Store &amp; Share</h3>
+                    <p>Keep skills in <code>.claude/skills/</code> in your repo. They're shareable, version-controlled, and Claude loads them on demand.</p>
+                    <div class="code-block" style="margin-top: 0.75rem; font-size: 0.75rem;">
+                        .claude/skills/<br>
+                        &nbsp;&nbsp;bug-fixer/<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;SKILL.md<br>
+                        &nbsp;&nbsp;codebase-mapper/<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;SKILL.md<br>
+                        &nbsp;&nbsp;implementation-planner/<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;SKILL.md
+                    </div>
+                    <p style="margin-top: 0.75rem; font-size: 0.85rem;">These prompts will change constantly. That's the point. The skill is knowing how to build them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 19: Implementation Planner ==================== -->
+    <section class="slide" id="slide-19">
+        <div class="slide-inner">
+            <span class="label reveal">Skill Example</span>
+            <h2 class="reveal">Implementation <span class="yellow">Planner</span></h2>
+            <p class="reveal" style="margin-bottom: 1rem;">Before writing any code, produce a complete plan with specific file-level changes. Think of it as a blueprint.</p>
+            <div class="bottom-line-grid stagger-children">
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">1</div>
+                    <div class="bottom-line-text"><strong>Explore the codebase.</strong> Search for related logic, constants, schemas, and patterns. Be exhaustive. Leave no dependency unaccounted for.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">2</div>
+                    <div class="bottom-line-text"><strong>Consider multiple approaches.</strong> Explore different design strategies before committing. Document tradeoffs. Prefer de-duplication, strong typing, and single sources of truth.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">3</div>
+                    <div class="bottom-line-text"><strong>Write a file-by-file change list.</strong> For every file created, modified, or deleted: exact path, before-and-after snippets, and a clear explanation of why.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">4</div>
+                    <div class="bottom-line-text"><strong>Build a granular task list.</strong> Numbered, checkboxed, with sub-tasks. Each task is independently actionable. This is what the executor will follow.</div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>The plan must be self-contained. Another engineer (or another Claude session) should be able to execute it without asking questions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 20: Bug Fixer ==================== -->
+    <section class="slide" id="slide-20">
+        <div class="slide-inner">
+            <span class="label reveal">Skill Example</span>
+            <h2 class="reveal">Bug <span class="yellow">Fixer</span></h2>
+            <p class="reveal" style="margin-bottom: 1rem;">Read-only investigation first. Propose changes only after understanding the root cause. Never jump straight to a fix.</p>
+            <div class="bottom-line-grid stagger-children">
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">1</div>
+                    <div class="bottom-line-text"><strong>Understand the problem.</strong> Read logs and error output. Identify what the system is doing and where the failure occurs. Explain the behavior in clear terms.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">2</div>
+                    <div class="bottom-line-text"><strong>Find evidence.</strong> Point to specific lines in logs. Reference exact file paths and line numbers. Use search tools to explore the codebase for related function names and error strings.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">3</div>
+                    <div class="bottom-line-text"><strong>Root cause analysis.</strong> Think through multiple possible causes. Narrow down to the most likely. Describe why the current logic breaks and under what conditions.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">4</div>
+                    <div class="bottom-line-text"><strong>Propose a clean fix.</strong> Present the simplest solution that aligns with existing patterns. No band-aids. Include exact file paths, line numbers, and before-and-after code. Then pause for approval.</div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>Key principle: work in read-only mode first. Don't touch files until you understand the problem and the human approves.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 21: Codebase Mapper ==================== -->
+    <section class="slide" id="slide-21">
+        <div class="slide-inner">
+            <span class="label reveal">Skill Example</span>
+            <h2 class="reveal">Codebase <span class="yellow">Mapper</span></h2>
+            <p class="reveal" style="margin-bottom: 1rem;">Create a comprehensive, navigable map of a codebase so any engineer (or any Claude session) can immediately understand the project.</p>
+            <div class="bottom-line-grid stagger-children">
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">1</div>
+                    <div class="bottom-line-text"><strong>Explore the foundation.</strong> Map the root directory, major directories, config files, build systems, and test frameworks. Get the big picture first.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">2</div>
+                    <div class="bottom-line-text"><strong>Deep structure analysis.</strong> Identify naming conventions, file patterns, architecture patterns (MVC, services, repositories). Sample multiple files of each type to understand the conventions.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">3</div>
+                    <div class="bottom-line-text"><strong>Catalog every component.</strong> For each major module: location, purpose, key files, dependencies, and what consumes it. Be exhaustive. Use real file paths, not generalizations.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">4</div>
+                    <div class="bottom-line-text"><strong>Build the quick-reference table.</strong> "Looking for API endpoints? <code>src/routes/</code>. Business logic? <code>src/services/</code>." Make it scannable. Think like a navigator.</div>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>The final map should let anyone immediately understand the architecture, locate any code, and know where to make changes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 22: A Library of Skills ==================== -->
+    <section class="slide" id="slide-22">
+        <div class="slide-inner">
+            <span class="label reveal">Team Standardization</span>
+            <h2 class="reveal">A Library of <span class="yellow">Skills</span></h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">These three examples are just the beginning. Here are skills you can standardize across your team to enforce consistency and save hours every week.</p>
+            <div class="card-grid-3 stagger-children">
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Workflow</span>
+                    <div class="agent-name">Documentation Creator</div>
+                    <p>Deep-dive into a feature or service and generate comprehensive, navigable documentation. Living artifacts that Claude references on future tasks.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Workflow</span>
+                    <div class="agent-name">Ticket Creator</div>
+                    <p>Turn a project plan or conversation into properly scoped, estimated Linear tickets with acceptance criteria and dependencies.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Quality</span>
+                    <div class="agent-name">Pre-Commit Reviewer</div>
+                    <p>Review staged changes before commit. Run type checks, linting, tests, and build validation. Catch issues before they hit the PR.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Quality</span>
+                    <div class="agent-name">Plan Reviewer</div>
+                    <p>A separate Claude session reviews implementation plans for correctness, safety, and feasibility before any code is written.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Workflow</span>
+                    <div class="agent-name">PR Creator</div>
+                    <p>Walk through the full PR creation workflow with proper branching, staged commits, and descriptive summaries that reviewers actually read.</p>
+                </div>
+                <div class="agent-card reveal">
+                    <span class="agent-trigger">Advanced</span>
+                    <div class="agent-name">Agent Handoff</div>
+                    <p>When a session runs out of context, produce a structured handoff package so the next Claude session picks up with full understanding.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.5rem;">
+                <p>Every skill is a markdown file in your repo. Version-controlled, shareable, and evolving with your team.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 23: Key Takeaways ==================== -->
+    <section class="slide" id="slide-23">
+        <div class="slide-inner">
+            <span class="label reveal">Recap</span>
+            <h2 class="reveal">Key Takeaways</h2>
+            <div class="bottom-line-grid stagger-children" style="margin-top: 1.5rem;">
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">1</div>
+                    <div class="bottom-line-text"><strong>AI is a mirror for unclear thinking.</strong> Messy output means messy input. Write thorough prompts, state constraints explicitly, make your decisions before asking AI to implement them.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">2</div>
+                    <div class="bottom-line-text"><strong>Context is your most important resource.</strong> Manage it aggressively. Use <code>/clear</code> between tasks, sub-agents for exploration, and <code>/rewind</code> when things go sideways.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">3</div>
+                    <div class="bottom-line-text"><strong>CLAUDE.md files are trail markers.</strong> Build a hierarchical router that gives Claude the right context at the right time. This is the single biggest multiplier.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">4</div>
+                    <div class="bottom-line-text"><strong>Engineer your workflow.</strong> PRDs define the what. Implementation plans define the how. Documentation compounds over time. Don't vibe code production software.</div>
+                </div>
+                <div class="bottom-line-card reveal">
+                    <div class="bottom-line-number">5</div>
+                    <div class="bottom-line-text"><strong>Build your own prompt factory.</strong> Learn the Familiarize, Research, Plan, Verify pattern. Store skills in your repo. Evolve them with each project.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 24: Q&A ==================== -->
+    <section class="slide" id="slide-24">
+        <div class="slide-inner" style="text-align: center;">
+            <span class="label reveal">Thank You</span>
+            <div class="closing-quote reveal" style="margin-left: auto; margin-right: auto;">
+                The ceiling on AI results isn't model intelligence.<br>It's what the model <span class="yellow">sees before it acts</span>.
+            </div>
+            <p class="reveal" style="margin: 2rem auto 0; color: var(--white-60); font-size: 1.1rem;">Questions?</p>
+            <p class="reveal" style="margin-top: 2.5rem; font-size: 0.85rem; color: var(--white-40);">Jason Brown &mdash; Tenex</p>
+        </div>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 0;
+                this.isScrolling = false;
+                this.scrollCooldown = 800;
+                this.touchStartY = 0;
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupWheelNav();
+                this.setupTouchNav();
+                this.updateSlideNumber(0);
+            }
+
+            createNavDots() {
+                const nav = document.getElementById('navDots');
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                    dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    nav.appendChild(dot);
+                }
+            }
+
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            this.currentSlide = index;
+                            this.updateNavDots(index);
+                            this.updateProgressBar(index);
+                            this.updateSlideNumber(index);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    this.hideKeyboardHint();
+                    switch(e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                        case ' ':
+                            e.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            this.prevSlide();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            setupWheelNav() {
+                document.addEventListener('wheel', (e) => {
+                    if (this.isScrolling) return;
+                    this.isScrolling = true;
+                    this.hideKeyboardHint();
+                    if (e.deltaY > 0) { this.nextSlide(); }
+                    else { this.prevSlide(); }
+                    setTimeout(() => { this.isScrolling = false; }, this.scrollCooldown);
+                }, { passive: true });
+            }
+
+            setupTouchNav() {
+                document.addEventListener('touchstart', (e) => {
+                    this.touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+                document.addEventListener('touchend', (e) => {
+                    const deltaY = this.touchStartY - e.changedTouches[0].clientY;
+                    if (Math.abs(deltaY) > 50) {
+                        this.hideKeyboardHint();
+                        if (deltaY > 0) { this.nextSlide(); }
+                        else { this.prevSlide(); }
+                    }
+                }, { passive: true });
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides - 1) this.goToSlide(this.currentSlide + 1);
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 0) this.goToSlide(this.currentSlide - 1);
+            }
+
+            goToSlide(index) {
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+            }
+
+            updateNavDots(index) {
+                document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+
+            updateProgressBar(index) {
+                const progress = ((index + 1) / this.totalSlides) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            updateSlideNumber(index) {
+                const current = String(index + 1).padStart(2, '0');
+                const total = String(this.totalSlides).padStart(2, '0');
+                document.getElementById('slideNumber').textContent = current + ' / ' + total;
+            }
+
+            hideKeyboardHint() {
+                document.getElementById('keyboardHint').classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { new SlidePresentation(); });
+    </script>
+
+</body>
+</html>
