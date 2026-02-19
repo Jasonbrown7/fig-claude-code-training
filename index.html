@@ -760,7 +760,7 @@
 
     <div class="progress-bar" id="progressBar"></div>
     <nav class="nav-dots" id="navDots"></nav>
-    <div class="slide-number" id="slideNumber">01 / 24</div>
+    <div class="slide-number" id="slideNumber">01 / 25</div>
     <div class="keyboard-hint" id="keyboardHint">
         <kbd>&darr;</kbd> or <kbd>Space</kbd> to navigate
     </div>
@@ -894,13 +894,13 @@
                 </div>
                 <div class="agent-card reveal">
                     <span class="agent-trigger">Git native</span>
-                    <div class="agent-name">Branch, commit, PR</div>
+                    <div class="agent-name">Branch, commit, PR, rebase</div>
                     <p>Create branches, write commit messages, open pull requests, stage specific files. All from natural language.</p>
                 </div>
                 <div class="agent-card reveal">
                     <span class="agent-trigger">Tool integration</span>
                     <div class="agent-name">CLI + MCP</div>
-                    <p>Use any CLI tool you have installed: <code>gh</code>, <code>aws</code>, <code>psql</code>, your build system. Connect external services via MCP.</p>
+                    <p>Use any CLI tool you have installed: <code>gh</code>, <code>aws</code>, <code>psql</code>, your build system. Connect external services via MCP like Exa and Notion.</p>
                 </div>
                 <div class="agent-card reveal">
                     <span class="agent-trigger">Persistent sessions</span>
@@ -1111,7 +1111,6 @@
                 <div class="compare-col highlight reveal">
                     <span class="compare-label">Rewind</span>
                     <div class="code-block" style="margin-bottom: 1rem;">
-                        <span class="comment"># Double-tap Escape or:</span><br>
                         <span class="prompt">&gt;</span> <span class="cmd"><span class="flag">/rewind</span></span><br>
                         <span class="comment"># Restore to any checkpoint</span>
                     </div>
@@ -1124,8 +1123,58 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 11: Skills ==================== -->
+    <!-- ==================== SLIDE 11: Claude Extensions ==================== -->
     <section class="slide" id="slide-11">
+        <div class="slide-inner">
+            <span class="label reveal">The Toolkit</span>
+            <h2 class="reveal">Claude <span class="yellow">Extensions</span></h2>
+            <p class="reveal" style="margin-bottom: 1rem;">Five ways to extend what Claude can do. Each serves a different purpose.</p>
+            <div class="table-wrap reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>What It Does</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong style="color: var(--yellow);">CLAUDE.md</strong></td>
+                            <td>Persistent context loaded every session</td>
+                            <td style="color: var(--white-40);">"Use pnpm, not npm. Run tests before committing."</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--yellow);">Skills</strong></td>
+                            <td>Reusable workflows and knowledge, loaded on demand</td>
+                            <td style="color: var(--white-40);"><code>/review</code> runs your code review checklist</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--yellow);">Sub-agents</strong></td>
+                            <td>Isolated context for parallel tasks and heavy exploration</td>
+                            <td style="color: var(--white-40);">Research reads 30 files, returns a 2-paragraph summary</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--yellow);">Agent Teams</strong></td>
+                            <td>Coordinate multiple independent Claude sessions</td>
+                            <td style="color: var(--white-40);">Spawn reviewers for security, performance, and tests in parallel</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--yellow);">MCP</strong></td>
+                            <td>Connect to external services and data</td>
+                            <td style="color: var(--white-40);">Query your database, search the web with Exa, pull from Notion</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>You don't need all of these on day one. Start with CLAUDE.md and Skills. Add the rest as your workflows mature.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 12: Skills ==================== -->
+    <section class="slide" id="slide-12">
         <div class="slide-inner">
             <span class="label reveal">Extend Claude Code</span>
             <h2 class="reveal"><span class="yellow">Skills</span></h2>
@@ -1166,43 +1215,41 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 12: Sub-agents & Context ==================== -->
-    <section class="slide" id="slide-12">
+    <!-- ==================== SLIDE 13: Sub-agents ==================== -->
+    <section class="slide" id="slide-13">
         <div class="slide-inner">
-            <span class="label reveal">Scaling Your Sessions</span>
-            <h2 class="reveal">Sub-agents &amp; Context Management</h2>
+            <span class="label reveal">Context Isolation</span>
+            <h2 class="reveal"><span class="yellow">Sub-agents</span></h2>
+            <p class="reveal" style="margin-bottom: 1.5rem;">Sub-agents run in their own context window and return summaries. Every file they read stays in their context, not yours. Your main session stays clean.</p>
             <div class="two-col stagger-children">
-                <div class="reveal">
-                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Built-in Sub-agents</h3>
-                    <p style="margin-bottom: 1rem;">Claude already has sub-agents it uses automatically. Each runs in its own context window and returns a summary. Your main session stays clean.</p>
-                    <ul class="bullets">
-                        <li><strong>Explore</strong> — Runs on Haiku (fast, cheap). Read-only codebase search. Finds files, traces patterns, returns results.</li>
+                <div class="card reveal">
+                    <h3>Built-in Sub-agents</h3>
+                    <p style="margin-bottom: 0.75rem;">Claude uses these automatically when appropriate:</p>
+                    <ul class="bullets" style="margin-top: 0.5rem;">
+                        <li><strong>Explore</strong> — Runs on Haiku (fast, cheap). Read-only codebase search.</li>
                         <li><strong>Plan</strong> — Read-only exploration. Maps out an approach without making changes.</li>
-                        <li><strong>General-purpose</strong> — Full-capability worker. Can read, write, and run commands for heavier isolated tasks.</li>
-                    </ul>
-                    <div class="code-block" style="margin-top: 1rem; font-size: 0.8rem;">
-                        <span class="comment">"Research how auth works in this project"</span><br><br>
-                        <span class="cmd">Sub-agent reads 30 files, traces the</span><br>
-                        <span class="cmd">auth flow, returns a 2-paragraph summary.</span><br>
-                        <span class="flag">Your main session stays clean.</span>
-                    </div>
-                </div>
-                <div class="reveal">
-                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Context Window</h3>
-                    <p style="margin-bottom: 1rem;">Your most important resource. It holds everything: conversation, files read, command output. Performance degrades as it fills.</p>
-                    <ul class="bullets">
-                        <li><code>/clear</code> between unrelated tasks</li>
-                        <li><code>/compact</code> to summarize what matters and free space. You can even add a focus: <code>/compact focus on the API changes</code></li>
-                        <li>Use sub-agents for heavy exploration</li>
-                        <li>After 2 failed corrections: <code>/clear</code> and start fresh with a better prompt</li>
+                        <li><strong>General-purpose</strong> — Full-capability worker. Can read, write, and run commands.</li>
                     </ul>
                 </div>
+                <div class="card reveal">
+                    <h3>Prompt for Sub-agents</h3>
+                    <p style="margin-bottom: 0.75rem;">Ask Claude to spin up sub-agents for parallel investigation:</p>
+                    <ul class="bullets" style="margin-top: 0.5rem;">
+                        <li><strong>Divide and conquer:</strong> "Spin up a sub-agent for each service and report back what you find."</li>
+                        <li><strong>Isolated research:</strong> "Research how auth works in this project." Sub-agent reads 30 files, returns a summary.</li>
+                        <li><strong>Parallel review:</strong> "Review security, performance, and test coverage in parallel."</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 1.25rem;">
+                <p>Sub-agents are how you do heavy exploration without destroying your main context.</p>
+                <p class="callout-body">Every file a sub-agent reads, every command it runs, every trace it follows stays in its context window. You get back a clean summary. This is the difference between a 500-file investigation that burns your session and one that takes 30 seconds.</p>
             </div>
         </div>
     </section>
 
-    <!-- ==================== SLIDE 13: CLAUDE.md ==================== -->
-    <section class="slide" id="slide-13">
+    <!-- ==================== SLIDE 14: CLAUDE.md ==================== -->
+    <section class="slide" id="slide-14">
         <div class="slide-inner">
             <span class="label reveal">The Router Pattern</span>
             <h2 class="reveal">CLAUDE.md as a <span class="yellow">Router</span></h2>
@@ -1228,8 +1275,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 14: Trail Marker Analogy ==================== -->
-    <section class="slide" id="slide-14">
+    <!-- ==================== SLIDE 15: Trail Marker Analogy ==================== -->
+    <section class="slide" id="slide-15">
         <div class="slide-inner">
             <span class="label reveal">The Router Pattern</span>
             <h2 class="reveal">The Trail Marker <span class="yellow">Analogy</span></h2>
@@ -1260,8 +1307,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 15: Hierarchical Loading ==================== -->
-    <section class="slide" id="slide-15">
+    <!-- ==================== SLIDE 16: Hierarchical Loading ==================== -->
+    <section class="slide" id="slide-16">
         <div class="slide-inner">
             <span class="label reveal">The Router Pattern</span>
             <h2 class="reveal">Hierarchical Loading</h2>
@@ -1310,8 +1357,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 16: What Goes In / Out ==================== -->
-    <section class="slide" id="slide-16">
+    <!-- ==================== SLIDE 17: What Goes In / Out ==================== -->
+    <section class="slide" id="slide-17">
         <div class="slide-inner">
             <span class="label reveal">The Router Pattern</span>
             <h2 class="reveal">What Goes In, What Stays Out</h2>
@@ -1345,8 +1392,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 17: Organize Your Context ==================== -->
-    <section class="slide" id="slide-17">
+    <!-- ==================== SLIDE 18: Organize Your Context ==================== -->
+    <section class="slide" id="slide-18">
         <div class="slide-inner">
             <span class="label reveal">Workflow Pipeline</span>
             <h2 class="reveal">Organize Your <span class="yellow">Context</span></h2>
@@ -1373,8 +1420,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 18: Build the Factory ==================== -->
-    <section class="slide" id="slide-18">
+    <!-- ==================== SLIDE 19: Build the Factory ==================== -->
+    <section class="slide" id="slide-19">
         <div class="slide-inner">
             <span class="label reveal">Skills &amp; Prompts</span>
             <h2 class="reveal">Build the <span class="yellow">Factory</span>, Not the Widget</h2>
@@ -1417,8 +1464,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 19: Implementation Planner ==================== -->
-    <section class="slide" id="slide-19">
+    <!-- ==================== SLIDE 20: Implementation Planner ==================== -->
+    <section class="slide" id="slide-20">
         <div class="slide-inner">
             <span class="label reveal">Skill Example</span>
             <h2 class="reveal">Implementation <span class="yellow">Planner</span></h2>
@@ -1447,8 +1494,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 20: Bug Fixer ==================== -->
-    <section class="slide" id="slide-20">
+    <!-- ==================== SLIDE 21: Bug Fixer ==================== -->
+    <section class="slide" id="slide-21">
         <div class="slide-inner">
             <span class="label reveal">Skill Example</span>
             <h2 class="reveal">Bug <span class="yellow">Fixer</span></h2>
@@ -1477,8 +1524,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 21: Codebase Mapper ==================== -->
-    <section class="slide" id="slide-21">
+    <!-- ==================== SLIDE 22: Codebase Mapper ==================== -->
+    <section class="slide" id="slide-22">
         <div class="slide-inner">
             <span class="label reveal">Skill Example</span>
             <h2 class="reveal">Codebase <span class="yellow">Mapper</span></h2>
@@ -1507,8 +1554,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 22: A Library of Skills ==================== -->
-    <section class="slide" id="slide-22">
+    <!-- ==================== SLIDE 23: A Library of Skills ==================== -->
+    <section class="slide" id="slide-23">
         <div class="slide-inner">
             <span class="label reveal">Team Standardization</span>
             <h2 class="reveal">A Library of <span class="yellow">Skills</span></h2>
@@ -1551,8 +1598,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 23: Key Takeaways ==================== -->
-    <section class="slide" id="slide-23">
+    <!-- ==================== SLIDE 24: Key Takeaways ==================== -->
+    <section class="slide" id="slide-24">
         <div class="slide-inner">
             <span class="label reveal">Recap</span>
             <h2 class="reveal">Key Takeaways</h2>
@@ -1581,8 +1628,8 @@
         </div>
     </section>
 
-    <!-- ==================== SLIDE 24: Q&A ==================== -->
-    <section class="slide" id="slide-24">
+    <!-- ==================== SLIDE 25: Q&A ==================== -->
+    <section class="slide" id="slide-25">
         <div class="slide-inner" style="text-align: center;">
             <span class="label reveal">Thank You</span>
             <div class="closing-quote reveal" style="margin-left: auto; margin-right: auto;">
