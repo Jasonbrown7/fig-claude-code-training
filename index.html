@@ -1173,15 +1173,18 @@
             <h2 class="reveal">Sub-agents &amp; Context Management</h2>
             <div class="two-col stagger-children">
                 <div class="reveal">
-                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Sub-agents</h3>
-                    <p style="margin-bottom: 1rem;">Claude can spawn separate workers that explore in their own context window and report back summaries.</p>
+                    <h3 style="color: var(--yellow); margin-bottom: 1rem;">Built-in Sub-agents</h3>
+                    <p style="margin-bottom: 1rem;">Claude already has sub-agents it uses automatically. Each runs in its own context window and returns a summary. Your main session stays clean.</p>
                     <ul class="bullets">
-                        <li>Research without cluttering your main session</li>
-                        <li>Code review with a <strong>fresh perspective</strong></li>
-                        <li>Parallel investigation across different areas</li>
+                        <li><strong>Explore</strong> — Runs on Haiku (fast, cheap). Read-only codebase search. Finds files, traces patterns, returns results.</li>
+                        <li><strong>Plan</strong> — Read-only exploration. Maps out an approach without making changes.</li>
+                        <li><strong>General-purpose</strong> — Full-capability worker. Can read, write, and run commands for heavier isolated tasks.</li>
                     </ul>
-                    <div class="code-block" style="margin-top: 1rem;">
-                        <span class="comment">"Please investigate the structure<br>of the codebase. Spin up a sub-agent<br>for each major service or feature."</span>
+                    <div class="code-block" style="margin-top: 1rem; font-size: 0.8rem;">
+                        <span class="comment">"Research how auth works in this project"</span><br><br>
+                        <span class="cmd">Sub-agent reads 30 files, traces the</span><br>
+                        <span class="cmd">auth flow, returns a 2-paragraph summary.</span><br>
+                        <span class="flag">Your main session stays clean.</span>
                     </div>
                 </div>
                 <div class="reveal">
