@@ -661,23 +661,22 @@
 
         /* Organize Your Context boxes */
         .context-flow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+            align-items: stretch;
             gap: 0;
-            margin-top: 2rem;
-            flex-wrap: wrap;
+            margin-top: 1.5rem;
         }
 
         .context-box {
             background: var(--bg-card);
             border: 1px solid var(--white-10);
             border-radius: 12px;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 1.25rem;
             text-align: center;
-            flex: 1;
-            min-width: 200px;
-            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .context-box.active {
@@ -688,18 +687,22 @@
         .context-box h3 {
             color: var(--yellow);
             margin-bottom: 0.5rem;
+            font-size: 0.95rem;
         }
 
         .context-box p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--white-60);
             max-width: none;
         }
 
         .context-arrow {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             color: var(--yellow);
-            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.75rem;
             font-weight: 700;
         }
 
@@ -736,8 +739,8 @@
             .evo-track { flex-direction: column; gap: 1rem; }
             .nav-dots { display: none; }
             .keyboard-hint { display: none; }
-            .context-flow { flex-direction: column; }
-            .context-arrow { transform: rotate(90deg); padding: 0.5rem 0; }
+            .context-flow { grid-template-columns: 1fr; gap: 0; }
+            .context-arrow { transform: rotate(90deg); padding: 0.5rem 0; justify-content: center; }
         }
 
         @media (max-width: 600px) {
@@ -1398,24 +1401,26 @@
             <span class="label reveal">Workflow Pipeline</span>
             <h2 class="reveal">Organize Your <span class="yellow">Context</span></h2>
             <p class="reveal" style="margin-bottom: 0.5rem;">Structure your documentation so each artifact feeds the next. Context compounds when it's organized deliberately.</p>
-            <div class="context-flow reveal" style="margin-top: 2rem;">
+            <div class="context-flow reveal">
                 <div class="context-box">
                     <h3>PRDs</h3>
                     <p>Define <strong style="color: var(--white);">what</strong> you're building. User workflows, acceptance criteria, compliance requirements. Humans own the decisions.</p>
                 </div>
                 <div class="context-arrow">&rarr;</div>
+                <div class="context-box">
+                    <h3>Project Plans</h3>
+                    <p>Architect <strong style="color: var(--white);">the system</strong>. Break multi-feature applications into phased tickets with dependencies, estimates, and technical decisions.</p>
+                </div>
+                <div class="context-arrow">&rarr;</div>
                 <div class="context-box active">
                     <h3>Implementation Plans</h3>
-                    <p>Define <strong style="color: var(--white);">how</strong> you're building it. File-level changes, scoped tasks, reviewed by a separate Claude session before execution.</p>
+                    <p>Define <strong style="color: var(--white);">how</strong> to build each ticket. File-level changes, scoped tasks, reviewed by a separate Claude session before execution.</p>
                 </div>
                 <div class="context-arrow">&rarr;</div>
                 <div class="context-box">
-                    <h3>Documentation Directories</h3>
-                    <p>Persistent knowledge that <strong style="color: var(--white);">compounds</strong>. Claude deep-dives into the codebase and generates thorough docs. Living artifacts for future sessions.</p>
+                    <h3>Documentation</h3>
+                    <p>Persistent knowledge that <strong style="color: var(--white);">compounds</strong>. Claude deep-dives into the codebase and generates living docs for future sessions.</p>
                 </div>
-            </div>
-            <div class="callout reveal" style="margin-top: 2rem;">
-                <p>Each artifact builds on the last. PRDs inform plans. Plans produce code. Code generates documentation. Documentation feeds the next PRD.</p>
             </div>
         </div>
     </section>
